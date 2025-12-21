@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BT Construction Samui</title>
+
+  <style>
+    :root{
+      --bg0:#061c1c;
+      --bg1:#073032;
+      --bg2:#0b3a2f;
+
+      --card: rgba(10, 20, 20, .55);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+      --muted2: rgba(255,255,255,.55);
+
+      --shadow: 0 18px 55px rgba(0,0,0,.35);
+      --glass: rgba(6,20,20,.45);
+
+      /* parallax vars (JS จะอัปเดต) */
+      --mx: 0px;
+      --my: 0px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:#051717;
+      overflow-x:hidden;
+    }
+    a{ color:inherit; }
+
+    /* BG */
+    .bg{ position:fixed; inset:0; z-index:-5; }
+    .bg__grad{
+      position:absolute; inset:-20%;
+      background:
+        radial-gradient(900px 540px at 20% 30%, rgba(68,209,200,.25), transparent 60%),
+        radial-gradient(900px 520px at 85% 25%, rgba(231,208,107,.18), transparent 62%),
+        radial-gradient(1100px 700px at 65% 85%, rgba(40,170,120,.25), transparent 64%),
+        linear-gradient(120deg, var(--bg0), var(--bg1) 40%, var(--bg2));
+    }
+    .bg__noise{
+      position:absolute; inset:0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.10'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      opacity:.55;
+    }
+    .bg__vignette{
+      position:absolute; inset:0;
+      background: radial-gradient(1200px 800px at 50% 35%, transparent 55%, rgba(0,0,0,.55));
+      opacity:.55;
+    }
+
+    /* TOPBAR */
+    .topbar{
+      position:fixed; top:0; left:0; right:0;
+      z-index:60;
+      padding: 14px clamp(14px, 2vw, 26px);
+    }
+    .wrap{ max-width:1200px; margin:0 auto; display:flex; justify-content:flex-end; }
+    .nav{
+      position:relative;
+      display:flex; gap:8px; align-items:center;
+      padding:8px;
+      border-radius:999px;
+      background: rgba(6,20,20,.45);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: 0 14px 40px rgba(0,0,0,.25);
+      backdrop-filter: blur(14px);
+    }
+    .nav__link,.nav__cta{
+      position:relative;
+      padding:10px 14px;
+      border-radius:999px;
+      text-decoration:none;
+      font-size:15px;
+      line-height:1;
+      white-space:nowrap;
+      opacity:.92;
+    }
+    .nav__cta{
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .nav__pill{
+      position:absolute;
+      height:36px;
+      border-radius:999px;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      left:8px; top:8px;
+      width:60px;
+      transform: translateX(0);
+      transition: transform .26s ease, width .26s ease;
+      pointer-events:none;
+    }
+
+    /* PAGE */
+    .page{ padding: clamp(14px, 2vw, 26px); padding-top: 92px; }
+    .hero{
+      max-width:1200px;
+      margin:0 auto;
+      min-height: calc(100svh - 120px);
+      display:grid;
+      place-items:center;
+      position:relative;
+      z-index:10; /* ให้อยู่เหนือ tiles */
+    }
+
+    .hero__card{
+      width: min(980px, 100%);
+      padding: clamp(18px, 2.2vw, 28px);
+      border-radius: 30px;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .brand-pill{
+      display:flex;
+      align-items:center;
+      gap: 18px;
+      padding: 14px 16px;
+      border-radius: 999px;
+      background: rgba(12, 22, 22, .45);
+      border:1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(12px);
+      max-width: 880px;
+      margin: 0 auto 18px;
+    }
+
+    /* โลโก้ใหญ่ขึ้นอีก */
+    .brand-logo-wrap{
+      width: 160px;
+      height: 160px;
+      border-radius: 42px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.12);
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      flex:0 0 auto;
+      box-shadow: 0 18px 40px rgba(0,0,0,.30);
+    }
+    .brand-logo{
+      width: 94%;
+      height: 94%;
+      object-fit: contain;
+      display:block;
+      filter: drop-shadow(0 14px 28px rgba(0,0,0,.50));
+    }
+
+    .brand-title{ font-size: 42px; font-weight: 900; line-height: 1.05; }
+    .brand-sub{ margin-top:4px; font-size:14px; color: var(--muted2); font-weight:700; }
+
+    .hero h1{
+      margin: 10px 0 10px;
+      text-align:center;
+      font-size: clamp(28px, 3.2vw, 46px);
+      line-height: 1.15;
+    }
+    .hero__meta{
+      margin: 0 0 16px;
+      text-align:center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .hero__actions{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-bottom: 14px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 12px 18px;
+      border-radius: 999px;
+      text-decoration:none;
+      font-weight: 800;
+      border:1px solid rgba(255,255,255,.14);
+      transition: transform .15s ease;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn--primary{
+      background: linear-gradient(90deg, rgba(231,208,107,.95), rgba(68,209,200,.85));
+      color: rgba(10,18,18,.92);
+    }
+    .btn--ghost{ background: rgba(255,255,255,.06); }
+
+    .hero__note{
+      margin-top: 8px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.16);
+      color: var(--muted);
+      text-align:center;
+    }
+
+    /* SECTIONS (เอาไว้ครบเหมือนเดิม) */
+    .section{ max-width: 1200px; margin: 0 auto; padding: 42px 0; position:relative; z-index:10; }
+    .section__head{ margin-bottom: 16px; padding: 0 6px; }
+    .section__head h2{ margin:0; font-size: clamp(22px, 2.2vw, 30px); }
+    .section__head p{ margin:6px 0 0; color: var(--muted); }
+
+    .grid{ display:grid; gap: 14px; }
+    .grid--3{ grid-template-columns: repeat(3, 1fr); }
+    .grid--2{ grid-template-columns: repeat(2, 1fr); }
+
+    .card{
+      padding: 16px;
+      border-radius: 22px;
+      background: rgba(10, 18, 18, .42);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,.20);
+      backdrop-filter: blur(10px);
+    }
+    .card h3{ margin:0 0 6px; font-size:18px; }
+    .card p{ margin:0; color: var(--muted); }
+
+    .filters{ display:flex; gap:8px; flex-wrap:wrap; margin: 14px 0; }
+    .chip{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight: 800;
+      opacity:.92;
+    }
+    .chip.is-active{ background: rgba(231,208,107,.22); border-color: rgba(231,208,107,.40); }
+
+    .works{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .work{
+      position:relative;
+      border-radius: 24px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      text-decoration:none;
+      min-height: 220px;
+      box-shadow: 0 16px 44px rgba(0,0,0,.25);
+    }
+    .work img{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit: cover;
+      transform: scale(1.02);
+      transition: transform .35s ease;
+      filter: saturate(1.05) contrast(1.05);
+    }
+    .work:hover img{ transform: scale(1.07); }
+    .work__cap{
+      position:absolute;
+      left: 12px; right: 12px; bottom: 12px;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(10,18,18,.55);
+      border: 1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(12px);
+    }
+    .work__title{ font-weight:900; }
+    .work__tag{ color: var(--muted2); font-size: 14px; margin-top: 2px; }
+
+    /* CONTACT */
+    .contact{ display:grid; grid-template-columns: 1.2fr .8fr; gap: 14px; }
+    .contact__card{
+      padding: 18px;
+      border-radius: 24px;
+      background: rgba(10, 18, 18, .42);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 16px 44px rgba(0,0,0,.25);
+    }
+    .contact__row{
+      display:flex;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(255,255,255,.12);
+    }
+    .contact__row:last-child{ border-bottom:0; }
+    .contact__actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px; }
+
+    .qr{
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px dashed rgba(255,255,255,.14);
+      text-align:center;
+    }
+    .qr__title{ color: rgba(255,255,255,.75); font-weight: 900; margin-bottom: 10px; }
+    .qr__img{
+      width: min(220px, 90%);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 14px 40px rgba(0,0,0,.25);
+    }
+
+    .footer{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 26px 0 18px;
+      color: var(--muted2);
+      text-align:center;
+      position:relative;
+      z-index:10;
+    }
+
+    /* =========================
+       ✅ TILES แบบ Microsoft: ใช้ GRID → ไม่ทับกัน 100%
+       ========================= */
+    .tiles{
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events:none;
+      padding: clamp(16px, 3.2vw, 52px);
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: repeat(10, minmax(0, 1fr));
+      gap: clamp(12px, 2.2vw, 22px);
+      perspective: 1200px;
+      perspective-origin: 50% 35%;
+    }
+
+    .tile{
+      border-radius: 26px;
+      overflow:hidden;
+      position:relative;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow:
+        0 18px 60px rgba(0,0,0,.38),
+        0 2px 0 rgba(255,255,255,.10) inset;
+      transform-style: preserve-3d;
+
+      /* ✅ Parallax + มิติ (แต่ไม่ชนกัน เพราะ grid คุมพื้นที่) */
+      transform:
+        translate3d(calc(var(--mx) * var(--px, .18)), calc(var(--my) * var(--py, .18)), 0)
+        translateZ(var(--z, 0px))
+        rotateX(var(--rx, 0deg))
+        rotateY(var(--ry, 0deg));
+      transition: filter .25s ease;
+      will-change: transform;
+    }
+
+    .tile img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      transform: scale(1.06);
+      filter: saturate(1.05) contrast(1.05);
+    }
+
+    /* ไฮไลต์แบบ Edge */
+    .tile::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.16), transparent 55%),
+        radial-gradient(320px 170px at 20% 18%, rgba(255,255,255,.18), transparent 60%);
+      border-radius: 26px;
+      pointer-events:none;
+      opacity:.85;
+    }
+
+    /* ✅ จัดตำแหน่ง “รอบ ๆ” แบบ Edge (ไม่ทับแน่นอน) */
+    .t1{ grid-column: 1 / span 4; grid-row: 2 / span 3;  --z: 90px; --rx: 6deg; --ry:-10deg; --px:.22; --py:.18; }
+    .t2{ grid-column: 1 / span 5; grid-row: 5 / span 3;  --z: 45px; --rx: 4deg; --ry:-7deg;  --px:.18; --py:.16; }
+    .t3{ grid-column: 1 / span 5; grid-row: 8 / span 3;  --z: 12px; --rx: 3deg; --ry:-6deg;  --px:.14; --py:.12; opacity:.95; }
+
+    .t4{ grid-column: 9 / span 4; grid-row: 2 / span 4;  --z: 80px; --rx: 6deg; --ry: 10deg; --px:.22; --py:.18; }
+    .t5{ grid-column: 8 / span 5; grid-row: 6 / span 3;  --z: 28px; --rx: 4deg; --ry: 8deg;  --px:.18; --py:.16; }
+    .t6{ grid-column: 8 / span 5; grid-row: 9 / span 3;  --z: 8px;  --rx: 3deg; --ry: 6deg;  --px:.14; --py:.12; opacity:.95; }
+
+    /* ให้การ์ดกลาง “กินพื้นที่ตรงกลาง” ชัดเจนแบบ Edge */
+    .center-safe{
+      position:fixed;
+      inset: 0;
+      z-index:-1;
+      pointer-events:none;
+      display:grid;
+      place-items:center;
+    }
+    .center-safe::before{
+      content:"";
+      width: min(980px, 100%);
+      height: 460px;
+      border-radius: 40px;
+      background: radial-gradient(800px 360px at 50% 50%, rgba(0,0,0,.18), rgba(0,0,0,0));
+      filter: blur(18px);
+      opacity:.9;
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .grid--3{ grid-template-columns: 1fr; }
+      .grid--2{ grid-template-columns: 1fr; }
+      .works{ grid-template-columns: 1fr; }
+      .contact{ grid-template-columns: 1fr; }
+
+      .brand-logo-wrap{ width: 120px; height: 120px; border-radius: 34px; }
+      .brand-title{ font-size: 32px; }
+
+      /* ลดจำนวน tiles ให้คลีนเหมือน Edge บนจอเล็ก */
+      .t2,.t5{ display:none; }
+      .t1{ grid-column: 1 / span 5; grid-row: 2 / span 3; opacity:.75; }
+      .t4{ grid-column: 8 / span 5; grid-row: 2 / span 4; opacity:.75; }
+      .t3{ grid-column: 1 / span 6; grid-row: 7 / span 4; opacity:.55; }
+      .t6{ grid-column: 7 / span 6; grid-row: 7 / span 4; opacity:.55; }
+    }
+
+    @media (max-width: 640px){
+      .page{ padding-top: 86px; }
+      .nav{ padding: 6px; gap: 6px; }
+      .nav__link, .nav__cta{ padding: 9px 10px; font-size: 14px; }
+
+      .brand-logo-wrap{ width: 104px; height: 104px; border-radius: 30px; }
+      .brand-title{ font-size: 26px; }
+
+      /* มือถือ: เหลือ 2 tiles แบบ Edge (ไม่รก ไม่ทับ) */
+      .t3,.t6{ display:none; }
+      .t1{ grid-column: 1 / span 6; grid-row: 2 / span 3; opacity:.55; }
+      .t4{ grid-column: 7 / span 6; grid-row: 3 / span 3; opacity:.55; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg__grad"></div>
+    <div class="bg__noise"></div>
+    <div class="bg__vignette"></div>
+  </div>
+
+  <!-- เงา safe-zone ตรงกลาง (ช่วยให้เหมือน Microsoft Edge มากขึ้น) -->
+  <div class="center-safe" aria-hidden="true"></div>
+
+  <!-- ✅ Tiles แบบ Grid: ไม่มีทางทับกัน -->
+  <div class="tiles" aria-hidden="true">
+    <div class="tile t1"><img src="images/tile-01.jpg" alt=""></div>
+    <div class="tile t2"><img src="images/tile-02.jpg" alt=""></div>
+
+    <!-- คุณไม่มี tile-03.jpg → ใช้ tile-07.jpg แทน -->
+    <div class="tile t3"><img src="images/tile-07.jpg" alt=""></div>
+
+    <div class="tile t4"><img src="images/tile-04.jpg" alt=""></div>
+    <div class="tile t5"><img src="images/tile-05.jpg" alt=""></div>
+    <div class="tile t6"><img src="images/tile-06.jpg" alt=""></div>
+  </div>
+
+  <header class="topbar">
+    <div class="wrap">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="nav__link" href="#reviews">รีวิว</a>
+        <a class="nav__link" href="#services">บริการ</a>
+        <a class="nav__link" href="#works">ผลงาน</a>
+        <a class="nav__link" href="#steps">ขั้นตอน</a>
+        <a class="nav__cta" href="#contact">ติดต่อ</a>
+        <span class="nav__pill" aria-hidden="true"></span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero" id="home">
+      <div class="hero__card">
+        <div class="brand-pill">
+          <div class="brand-logo-wrap">
+            <img class="brand-logo" src="images/bt-logo.png" alt="BT logo">
+          </div>
+          <div>
+            <div class="brand-title">BT Construction Samui</div>
+            <div class="brand-sub">Professional Contractor • Koh Samui</div>
+          </div>
+        </div>
+
+        <h1>ผู้รับเหมางานต่อเติม สแตนเลส<br>และโครงสร้างเหล็กในเกาะสมุย</h1>
+        <p class="hero__meta">งานโครงสร้าง • หลังคา/กันสาด • สแตนเลส • UPVC • รีโนเวท/ต่อเติม</p>
+
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="#contact">ขอใบเสนอราคา</a>
+          <a class="btn btn--ghost" href="#works">ดูผลงาน</a>
+        </div>
+
+        <div class="hero__note">ส่งรูปหน้างาน + ขนาดคร่าว ๆ ทางไลน์/โทร เราตอบไว</div>
+      </div>
+    </section>
+
+    <section class="section" id="reviews">
+      <div class="section__head">
+        <h2>รีวิวจากลูกค้า</h2>
+        <p>ใส่รีวิวจริงทีหลังได้เลย</p>
+      </div>
+      <div class="grid grid--3">
+        <article class="card"><h3>ลูกค้า A</h3><p>งานไว เก็บงานดีมาก สื่อสารชัดเจน</p></article>
+        <article class="card"><h3>ลูกค้า B</h3><p>โครงสร้างแข็งแรง งานเรียบร้อย</p></article>
+        <article class="card"><h3>ลูกค้า C</h3><p>มืออาชีพ แนะนำครับ</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="services">
+      <div class="section__head">
+        <h2>บริการของเรา</h2>
+        <p>รับงานเล็ก-ใหญ่ พร้อมประเมินหน้างาน</p>
+      </div>
+      <div class="grid grid--3">
+        <article class="card"><h3>โครงสร้างเหล็ก</h3><p>โรงจอดรถ โครงหลังคา โครงเสริม งานเหล็กตามแบบ</p></article>
+        <article class="card"><h3>หลังคา / กันสาด</h3><p>เมทัลชีท โพลีคาร์บอเนต ดีไซน์สวย เนี๊ยบ</p></article>
+        <article class="card"><h3>สแตนเลส / UPVC</h3><p>ราวกันตก ประตู/หน้าต่าง งานสวยคม ดูแลง่าย</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="works">
+      <div class="section__head">
+        <h2>ผลงาน</h2>
+        <p>กดเลือกหมวดเพื่อดูเฉพาะงานที่สนใจ</p>
+      </div>
+
+      <div class="filters" role="tablist" aria-label="Work categories">
+        <button class="chip is-active" data-filter="all">ทั้งหมด</button>
+        <button class="chip" data-filter="steel">โครงเหล็ก</button>
+        <button class="chip" data-filter="roof">หลังคา/กันสาด</button>
+        <button class="chip" data-filter="stainless">สแตนเลส</button>
+        <button class="chip" data-filter="upvc">UPVC</button>
+        <button class="chip" data-filter="reno">ต่อเติม/รีโนเวท</button>
+      </div>
+
+      <div class="works">
+        <a class="work" data-cat="roof" href="#"><img src="images/work-01.jpg" alt=""><div class="work__cap"><div class="work__title">กันสาดหน้าอาคาร</div><div class="work__tag">หลังคา/กันสาด</div></div></a>
+        <a class="work" data-cat="steel" href="#"><img src="images/work-02.jpg" alt=""><div class="work__cap"><div class="work__title">โครงเหล็กโรงจอดรถ</div><div class="work__tag">โครงเหล็ก</div></div></a>
+        <a class="work" data-cat="stainless" href="#"><img src="images/work-03.jpg" alt=""><div class="work__cap"><div class="work__title">ราวกันตกสแตนเลส</div><div class="work__tag">สแตนเลส</div></div></a>
+        <a class="work" data-cat="upvc" href="#"><img src="images/work-04.jpg" alt=""><div class="work__cap"><div class="work__title">ประตูหน้าต่าง UPVC</div><div class="work__tag">UPVC</div></div></a>
+        <a class="work" data-cat="reno" href="#"><img src="images/work-05.jpg" alt=""><div class="work__cap"><div class="work__title">ต่อเติมครัวหลังบ้าน</div><div class="work__tag">ต่อเติม/รีโนเวท</div></div></a>
+        <a class="work" data-cat="steel" href="#"><img src="images/work-06.jpg" alt=""><div class="work__cap"><div class="work__title">โครงเหล็กตกแต่ง</div><div class="work__tag">โครงเหล็ก</div></div></a>
+      </div>
+    </section>
+
+    <section class="section" id="steps">
+      <div class="section__head">
+        <h2>ขั้นตอนการทำงาน</h2>
+        <p>ทำงานเป็นระบบ ตั้งแต่เริ่มจนส่งมอบ</p>
+      </div>
+      <div class="grid grid--2">
+        <article class="card"><h3>1) ส่งข้อมูลหน้างาน</h3><p>ส่งรูป/วิดีโอ + ขนาดคร่าว ๆ + โลเคชัน</p></article>
+        <article class="card"><h3>2) ประเมิน/วัดหน้างาน</h3><p>นัดดูหน้างานเพื่อสรุปสเปกและปริมาณงาน</p></article>
+        <article class="card"><h3>3) ใบเสนอราคา</h3><p>สรุปราคา วัสดุ ระยะเวลา เงื่อนไขชัดเจน</p></article>
+        <article class="card"><h3>4) เริ่มงาน/ส่งมอบ</h3><p>ดำเนินงานตามแผน เก็บงานเรียบร้อยก่อนส่งมอบ</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="contact">
+      <div class="section__head">
+        <h2>ติดต่อ / ขอใบเสนอราคา</h2>
+        <p>โทรได้เลย หรือสแกนไลน์ QR เพื่อส่งรูปหน้างาน</p>
+      </div>
+
+      <div class="contact">
+        <div class="contact__card">
+          <div class="contact__row"><div>โทร (คุณบรรธง)</div><div><a href="tel:0936635223">093-663-5223</a></div></div>
+          <div class="contact__row"><div>โทร (คุณอุ้ม)</div><div><a href="tel:0937575748">093-757-5748</a></div></div>
+          <div class="contact__row">
+            <div>Facebook</div>
+            <div>
+              <a href="https://www.facebook.com/search/top?q=%E0%B8%9A%E0%B8%A3%E0%B8%A3%E0%B8%98%E0%B8%87%20%E0%B8%A5%E0%B8%B0%E0%B8%94%E0%B8%B2%E0%B8%94%E0%B8%B2%E0%B8%A9"
+                 target="_blank" rel="noopener">บรรธง ละดาดาษ</a>
+            </div>
+          </div>
+
+          <div class="contact__actions">
+            <a class="btn btn--primary" href="tel:0936635223">โทรหาคุณบรรธง</a>
+            <a class="btn btn--ghost" href="tel:0937575748">โทรหาคุณอุ้ม</a>
+          </div>
+
+          <div class="qr">
+            <div class="qr__title">สแกนเพิ่มเพื่อน LINE</div>
+            <img class="qr__img" src="images/line-qr.jpg" alt="LINE QR">
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>ส่งแบบนี้ จะประเมินไว</h3>
+          <p style="color:var(--muted); margin:8px 0 0;">
+            รูปหลายมุม • ขนาดคร่าว ๆ • วัสดุที่ต้องการ • พิกัด/โลเคชัน
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>© <span id="year"></span> BT Construction Samui</div>
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      const $ = (q, el=document) => el.querySelector(q);
+      const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
+
+      // year
+      const y = $("#year");
+      if (y) y.textContent = new Date().getFullYear();
+
+      // nav pill
+      const nav = $(".nav");
+      const pill = $(".nav__pill");
+      const links = $$(".nav__link, .nav__cta");
+
+      function movePillTo(el){
+        if (!pill || !nav || !el) return;
+        const r = el.getBoundingClientRect();
+        const nr = nav.getBoundingClientRect();
+        pill.style.width = `${Math.max(46, r.width)}px`;
+        pill.style.transform = `translateX(${(r.left - nr.left)}px)`;
+      }
+      requestAnimationFrame(() => movePillTo(links[0]));
+
+      links.forEach(a => {
+        a.addEventListener("mouseenter", () => movePillTo(a));
+        a.addEventListener("focus", () => movePillTo(a));
+        a.addEventListener("click", (e) => {
+          const href = a.getAttribute("href") || "";
+          if (href.startsWith("#")) {
+            e.preventDefault();
+            movePillTo(a);
+            history.pushState(null, "", href);
+
+            const target = document.querySelector(href);
+            if (!target) return;
+            const headerOffset = 92;
+            const y = target.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+            window.scrollTo({ top: y, behavior: "smooth" });
+          }
+        });
+      });
+
+      // works filter
+      const chips = $$(".chip");
+      const works = $$(".work");
+      chips.forEach(btn => {
+        btn.addEventListener("click", () => {
+          chips.forEach(b => b.classList.remove("is-active"));
+          btn.classList.add("is-active");
+          const f = btn.dataset.filter;
+          works.forEach(w => {
+            const cat = w.dataset.cat;
+            w.style.display = (f === "all" || f === cat) ? "" : "none";
+          });
+        });
+      });
+
+      // ✅ Microsoft-like smooth parallax (ไม่กระตุก)
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduceMotion) {
+        let tx = 0, ty = 0;   // current
+        let mx = 0, my = 0;   // target
+
+        window.addEventListener("mousemove", (e) => {
+          const cx = innerWidth / 2;
+          const cy = innerHeight / 2;
+          mx = (e.clientX - cx) / 38;  // ปรับความแรงได้ (ตัวเลขมาก = เบาลง)
+          my = (e.clientY - cy) / 38;
+        }, { passive: true });
+
+        const tick = () => {
+          tx += (mx - tx) * 0.08; // smoothing
+          ty += (my - ty) * 0.08;
+
+          document.documentElement.style.setProperty("--mx", `${tx}px`);
+          document.documentElement.style.setProperty("--my", `${ty}px`);
+
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    })();
+  </script>
+</body>
+</html>
